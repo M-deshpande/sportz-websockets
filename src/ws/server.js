@@ -18,18 +18,27 @@ function broadcast (wss, payload) {
 };
 
 export function attachWebSocketServer (server) {
-    const wss = new WebSocketServer({server, path: "/ws", maxPayload: 1024 * 1024 * 10}); //10mb
+    const wss = new WebSocketServer({server, path: "/ws", maxPayload: 1024 * 1024 * 10});
 
     wss.on("connection", (socket) => {
+        socket.isAlive = true;
+        socket.on("pong", () => { socket.isAlive = true; });
+        
         sendJson(socket, {type: "welcome"}); 
-
         socket.on("error", console.error);
     });
+    
+    // Heartbeat interval
+    const interval = setInterval(() => {
+        for (const socket of wss.clients) {
+            if (socket.isAlive === false) {
+                return socket.terminate();
+            }
+            socket.isAlive = false;
+            socket.ping();
+        }
+    }, 30000);
 
+    wss.on("close", () => clearInterval(interval));
 
-    function broadcastMatchCreated (match) {
-        broadcast(wss, {type: "matchCreated", data: match});
-    }
-
-    return { broadcastMatchCreated };
 }
