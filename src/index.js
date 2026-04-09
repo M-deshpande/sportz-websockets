@@ -3,6 +3,7 @@ import { matchesRouter } from './routes/matches.js';
 import { attachWebSocketServer } from './ws/server.js';
 import db from './db/db.js';
 import http from 'http';
+import { securityMiddleware } from '../src/arcjet.js';
 
 const PORT = Number(process.env.PORT || 8000);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -17,6 +18,8 @@ app.use(express.json()); //middleware that allows express to understand json com
 app.get('/', (req, res) => {
     res.send('Hello from server!');
 });
+
+app.use(securityMiddleware())
 
 app.use('/matches', matchesRouter);
 
