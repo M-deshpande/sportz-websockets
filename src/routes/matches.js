@@ -2,6 +2,7 @@ import { Router } from "express";
 import { createMatchSchema, listMatchesQuerySchema } from "../validation/matches.js";
 import { Match } from "../db/schema.js";
 import { getMatchStatus } from "../utils/match-status.js";
+import { commentaryRouter } from "./commentary.js";
 
 export const matchesRouter = Router();
 
@@ -32,6 +33,7 @@ matchesRouter.get('/', async (req, res) => {
     }
 });
 
+matchesRouter.use("/:id/commentary", commentaryRouter);
 matchesRouter.post('/', async (req, res) => {
     const parsed = createMatchSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -62,3 +64,4 @@ matchesRouter.post('/', async (req, res) => {
         res.status(500).json({ error: 'Failed to create match', details: error.message });
     }
 });
+
